@@ -200,68 +200,150 @@ export const AuthForm = () => {
             </TabsList>
             
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-phone">Phone Number</Label>
-                  <Input
-                    id="signin-phone"
-                    type="tel"
-                    value={signInForm.phone}
-                    onChange={(e) => setSignInForm({ ...signInForm, phone: e.target.value })}
-                    placeholder="+1234567890"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+              <div className="space-y-4">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Send OTP
+                  Sign in with Google
                 </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              {!showOtpVerification ? (
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      value={signUpForm.fullName}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, fullName: e.target.value })}
-                      required
-                    />
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleFacebookSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Sign in with Facebook
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleTwitterSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Sign in with X
+                </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
                   </div>
-                  
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                
+                <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-phone-number">Phone Number</Label>
+                    <Label htmlFor="signin-phone">Phone Number</Label>
                     <Input
-                      id="signup-phone-number"
+                      id="signin-phone"
                       type="tel"
-                      value={signUpForm.phoneNumber}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, phoneNumber: e.target.value })}
+                      value={signInForm.phone}
+                      onChange={(e) => setSignInForm({ ...signInForm, phone: e.target.value })}
                       placeholder="+1234567890"
                       required
                     />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="user-type">Account Type</Label>
-                    <select
-                      id="user-type"
-                      className="w-full p-2 border border-input rounded-md bg-background"
-                      value={signUpForm.userType}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, userType: e.target.value })}
-                    >
-                      <option value="customer">Customer</option>
-                      <option value="vendor">Service Provider</option>
-                    </select>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Send OTP
                   </Button>
                 </form>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              {!showOtpVerification ? (
+                <div className="space-y-4">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Sign in with Google
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleFacebookSignIn}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Sign in with Facebook
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleTwitterSignIn}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Sign in with X
+                  </Button>
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        value={signUpForm.fullName}
+                        onChange={(e) => setSignUpForm({ ...signUpForm, fullName: e.target.value })}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-phone-number">Phone Number</Label>
+                      <Input
+                        id="signup-phone-number"
+                        type="tel"
+                        value={signUpForm.phoneNumber}
+                        onChange={(e) => setSignUpForm({ ...signUpForm, phoneNumber: e.target.value })}
+                        placeholder="+1234567890"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="user-type">Account Type</Label>
+                      <select
+                        id="user-type"
+                        className="w-full p-2 border border-input rounded-md bg-background"
+                        value={signUpForm.userType}
+                        onChange={(e) => setSignUpForm({ ...signUpForm, userType: e.target.value })}
+                      >
+                        <option value="customer">Customer</option>
+                        <option value="vendor">Service Provider</option>
+                      </select>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Send OTP
+                    </Button>
+                  </form>
+                </div>
               ) : (
                 <form onSubmit={handleVerifyOTP} className="space-y-4">
                   <div className="space-y-2">
@@ -292,47 +374,6 @@ export const AuthForm = () => {
             </TabsContent>
           </Tabs>
           
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign in with Google
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleFacebookSignIn}
-                disabled={isLoading}
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign in with Facebook
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleTwitterSignIn}
-                disabled={isLoading}
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign in with X
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
