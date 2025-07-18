@@ -10,15 +10,12 @@ import { Loader2 } from 'lucide-react';
 
 export const AuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const { signUp, signUpWithPhone, signIn, signInWithPhone, signInWithGoogle, signInWithFacebook, signInWithTwitter, sendOTP, verifyOTP } = useAuth();
   const { toast } = useToast();
 
   const [signInForm, setSignInForm] = useState({
-    email: '',
     phone: '',
-    password: '',
   });
 
   const [signUpForm, setSignUpForm] = useState({
@@ -36,20 +33,34 @@ export const AuthForm = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = authMode === 'email' 
-      ? await signIn(signInForm.email, signInForm.password)
-      : await signInWithPhone(signInForm.phone, signInForm.password);
+    // Check if user has a valid session (within 30 days)
+    const lastLoginTime = localStorage.getItem('lastLoginTime');
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    
+    if (lastLoginTime && parseInt(lastLoginTime) > thirtyDaysAgo) {
+      toast({
+        title: "Welcome back!",
+        description: "You have been signed in successfully.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Send OTP for sign in
+    const { error } = await sendOTP(signInForm.phone);
     
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error signing in",
+        title: "Error sending OTP",
         description: error.message,
       });
     } else {
+      setOtpForm({ ...otpForm, phone: signInForm.phone });
+      setShowOtpVerification(true);
       toast({
-        title: "Welcome back!",
-        description: "You have been signed in successfully.",
+        title: "OTP sent!",
+        description: "Please check your phone for the verification code.",
       });
     }
     
@@ -117,6 +128,8 @@ export const AuthForm = () => {
         description: error.message,
       });
     } else {
+      // Store login time for 30-day session persistence
+      localStorage.setItem('lastLoginTime', Date.now().toString());
       toast({
         title: "Welcome!",
         description: "You have been signed in successfully.",
@@ -187,67 +200,23 @@ export const AuthForm = () => {
             </TabsList>
             
             <TabsContent value="signin">
-              <div className="space-y-4">
-                <div className="flex space-x-2">
-                  <Button
-                    type="button"
-                    variant={authMode === 'email' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAuthMode('email')}
-                  >
-                    Email
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={authMode === 'phone' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAuthMode('phone')}
-                  >
-                    Phone
-                  </Button>
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-phone">Phone Number</Label>
+                  <Input
+                    id="signin-phone"
+                    type="tel"
+                    value={signInForm.phone}
+                    onChange={(e) => setSignInForm({ ...signInForm, phone: e.target.value })}
+                    placeholder="+1234567890"
+                    required
+                  />
                 </div>
-                
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  {authMode === 'email' ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email">Email</Label>
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        value={signInForm.email}
-                        onChange={(e) => setSignInForm({ ...signInForm, email: e.target.value })}
-                        required
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-phone">Phone Number</Label>
-                      <Input
-                        id="signin-phone"
-                        type="tel"
-                        value={signInForm.phone}
-                        onChange={(e) => setSignInForm({ ...signInForm, phone: e.target.value })}
-                        placeholder="+1234567890"
-                        required
-                      />
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      value={signInForm.password}
-                      onChange={(e) => setSignInForm({ ...signInForm, password: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Sign In
-                  </Button>
-                </form>
-              </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Send OTP
+                </Button>
+              </form>
             </TabsContent>
             
             <TabsContent value="signup">
