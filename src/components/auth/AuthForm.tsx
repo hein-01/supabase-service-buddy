@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 
 export const AuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [authMode, setAuthMode] = useState<'email' | 'phone' | 'otp'>('email');
+  const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const { signUp, signUpWithPhone, signIn, signInWithPhone, signInWithGoogle, signInWithFacebook, signInWithTwitter, sendOTP, verifyOTP } = useAuth();
   const { toast } = useToast();
@@ -22,9 +22,6 @@ export const AuthForm = () => {
   });
 
   const [signUpForm, setSignUpForm] = useState({
-    email: '',
-    phone: '',
-    password: '',
     fullName: '',
     phoneNumber: '',
     userType: 'customer',
@@ -63,29 +60,21 @@ export const AuthForm = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = authMode === 'email'
-      ? await signUp(signUpForm.email, signUpForm.password, {
-          full_name: signUpForm.fullName,
-          phone_number: signUpForm.phoneNumber,
-          user_type: signUpForm.userType,
-        })
-      : await signUpWithPhone(signUpForm.phone, signUpForm.password, {
-          full_name: signUpForm.fullName,
-          user_type: signUpForm.userType,
-        });
+    // First send OTP when creating account
+    const { error } = await sendOTP(signUpForm.phoneNumber);
     
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error creating account",
+        title: "Error sending OTP",
         description: error.message,
       });
     } else {
+      setOtpForm({ ...otpForm, phone: signUpForm.phoneNumber });
+      setShowOtpVerification(true);
       toast({
-        title: "Account created!",
-        description: authMode === 'email' 
-          ? "Please check your email to verify your account."
-          : "Please check your phone for verification code.",
+        title: "OTP sent!",
+        description: "Please check your phone for the verification code.",
       });
     }
     
@@ -192,10 +181,9 @@ export const AuthForm = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              <TabsTrigger value="otp">Phone OTP</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -263,26 +251,7 @@ export const AuthForm = () => {
             </TabsContent>
             
             <TabsContent value="signup">
-              <div className="space-y-4">
-                <div className="flex space-x-2">
-                  <Button
-                    type="button"
-                    variant={authMode === 'email' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAuthMode('email')}
-                  >
-                    Email
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={authMode === 'phone' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAuthMode('phone')}
-                  >
-                    Phone
-                  </Button>
-                </div>
-                
+              {!showOtpVerification ? (
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
@@ -295,54 +264,18 @@ export const AuthForm = () => {
                     />
                   </div>
                   
-                  {authMode === 'email' ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        value={signUpForm.email}
-                        onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })}
-                        required
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-phone">Phone Number</Label>
-                      <Input
-                        id="signup-phone"
-                        type="tel"
-                        value={signUpForm.phone}
-                        onChange={(e) => setSignUpForm({ ...signUpForm, phone: e.target.value })}
-                        placeholder="+1234567890"
-                        required
-                      />
-                    </div>
-                  )}
-                  
-                  {authMode === 'email' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-phone-number">Phone Number (Optional)</Label>
-                      <Input
-                        id="signup-phone-number"
-                        type="tel"
-                        value={signUpForm.phoneNumber}
-                        onChange={(e) => setSignUpForm({ ...signUpForm, phoneNumber: e.target.value })}
-                        placeholder="+1234567890"
-                      />
-                    </div>
-                  )}
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-phone-number">Phone Number</Label>
                     <Input
-                      id="signup-password"
-                      type="password"
-                      value={signUpForm.password}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })}
+                      id="signup-phone-number"
+                      type="tel"
+                      value={signUpForm.phoneNumber}
+                      onChange={(e) => setSignUpForm({ ...signUpForm, phoneNumber: e.target.value })}
+                      placeholder="+1234567890"
                       required
                     />
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="user-type">Account Type</Label>
                     <select
@@ -354,28 +287,6 @@ export const AuthForm = () => {
                       <option value="customer">Customer</option>
                       <option value="vendor">Service Provider</option>
                     </select>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Account
-                  </Button>
-                </form>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="otp">
-              {!showOtpVerification ? (
-                <form onSubmit={handleSendOTP} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="otp-phone">Phone Number</Label>
-                    <Input
-                      id="otp-phone"
-                      type="tel"
-                      value={otpForm.phone}
-                      onChange={(e) => setOtpForm({ ...otpForm, phone: e.target.value })}
-                      placeholder="+1234567890"
-                      required
-                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -405,7 +316,7 @@ export const AuthForm = () => {
                     className="w-full"
                     onClick={() => setShowOtpVerification(false)}
                   >
-                    Back to Phone Number
+                    Back to Sign Up
                   </Button>
                 </form>
               )}
